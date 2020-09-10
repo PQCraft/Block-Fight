@@ -2,7 +2,7 @@
 A SDL2 Demo game<br>
 <br>
 # Compiling:
-!: If you are reading this, then I still aven't found a way to cross compile this for Windows.<br>
+!: If you are reading this line, I still haven't found a way to cross compile this for Windows.<br>
 The build.sh is a linux gcc compile script.<br>
 You will need to install SDL2 (`sudo apt install libsdl2-dev` on Ubuntu) and SDL2_ttf (`sudo apt install libsdl2-ttf-dev` on Ubuntu)<br>
 Run build.sh. If it compiles correctly, it will start the game.<br>
