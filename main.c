@@ -5,6 +5,9 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <time.h>
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 bool hasFocus = false;
 bool mouseFocus = false;
 bool menu = true;
@@ -40,7 +43,7 @@ void resetTimer(Uint8 tn) {
     trv[tn] = SDL_GetTicks();
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
@@ -76,6 +79,11 @@ int main()
     SDL_Quit();
     return 0;
 }
+#ifdef _WIN32
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow) {
+    return main(0, NULL);
+}
+#endif
 void handleSDLEvents()
 {
     while (SDL_PollEvent(&event)) {
