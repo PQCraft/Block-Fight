@@ -28,6 +28,7 @@ int fps;
 int p1s = 0;
 int p2s = 0;
 int pto = 0;
+int p2aihc = 300;
 bool sp = false;
 SDL_Rect ptrail1[16];
 SDL_Rect ptrail2[16];
@@ -259,13 +260,16 @@ void doGameLogic()
     if (p2r < 0) {p2r = p2r + 0.1;}
     if (sp) {
         //if (abs(abs(p1.x + 10) - abs(p2.x + 10)) < 72 + rand()%144 && rand()%5 == 0) {aiup = true;}
-        if (abs(abs(p1.x + 10) - abs(p2.x + 10)) < 77 + rand()%45 && rand()%11 == 0) {aiup = true;}
-        if (abs(abs(p1.x + 10) - abs(p2.x + 10)) < 55 + rand()%15 && rand()%3 == 0) {aiup = false;}
-        if (abs(abs(p1.x + 10) - abs(p2.x + 10)) < 33 + rand()%5 && rand()%1 == 0) {aiup = true;}
+        //printf("%d\n", abs(p1.x + 10 - p2.x + 10));
+        p2aihc = 300;
+        if (abs(p1.x + 10 - p2.x + 10) < 250 + rand()%15 && rand()%1 == 0 && (p2r > 5 || p2r < -5)) {aiup = true; p2aihc = 200;}
+        if (abs(p1.x + 10 - p2.x + 10) < 220 + rand()%10 && rand()%3 == 0) {aiup = false;}
+        if (abs(p1.x + 10 - p2.x + 10) < 50 + rand()%5 && rand()%1 == 0) {aiup = true;}
+        if (abs(p1.x + 10 - p2.x + 10) < 40 + rand()%5 && rand()%1 == 0) {aiup = false;}
         if (p2.y < 450) {aiup = false;}
         //printf("%d\n", aip);
-        if ((aip < -10 && p2.y > 400) || (p2r < 0 && p2.y < 415) && p1.y > 324) {airight = true;}
-        if ((aip > 10 && p2.y > 400) || (p2r > 0 && p2.y < 415) && p1.y > 324) {aileft = true;}
+        if ((aip < -10 && p2.y > 400) || (p2r < 0 && p2.y < 415) && p1.y > p2aihc) {airight = true;}
+        if ((aip > 10 && p2.y > 400) || (p2r > 0 && p2.y < 415) && p1.y > p2aihc) {aileft = true;}
         //printf("-----------------\n");
         //if (aiup) {printf("aiup\n");}
         //if (aileft) {printf("aileft\n");}
