@@ -2,9 +2,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <time.h>
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+// Option vars:
+bool printFps = false; // False by defualt due to issues with the terminal
+// ------------
 bool hasFocus = false;
 bool mouseFocus = false;
 bool menu = true;
@@ -38,44 +43,13 @@ Uint32 getTimer(Uint8 tn) {
 }
 void resetTimer(Uint8 tn) {
     trv[tn] = SDL_GetTicks();
+    return;
 }
-
-int main()
-{
-    SDL_Init(SDL_INIT_EVERYTHING);
-    TTF_Init();
-    window = SDL_CreateWindow("Block Fight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_ALLOW_HIGHDPI);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    bg.x = 0; bg.y = 0; bg.w = 640; bg.h = 480;
-    p1.x = 99; p1.y = -120; p1.w = 20; p1.h = 20;
-    p2.x = 520; p2.y = -120; p2.w = 20; p2.h = 20;
-    TTF_Font * font = TTF_OpenFont("LCD_MONO.TTF", 96);
-    for (int i = 0; i <= 15; i++) {
-        ptrail1[i].h = 20;
-        ptrail1[i].w = 20;
-        ptrail2[i].h = 20;
-        ptrail2[i].w = 20;
-        ptrail1[i].x = 99;
-        ptrail1[i].y = -120;
-        ptrail2[i].x = 520;
-        ptrail2[i].y = -120;
-        //pto++;
-    }
-    while (isRunning) {
-        handleSDLEvents();
-        doGameLogic();
-        renderScreen(font);
-    }
-    SDL_SetWindowFullscreen(window, 0);
-    TTF_CloseFont(font);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    TTF_Quit();
-    SDL_Quit();
-    return 0;
+#ifdef _WIN32
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow) {
+    return main(0, NULL);
 }
+#endif
 void handleSDLEvents()
 {
     while (SDL_PollEvent(&event)) {
@@ -96,22 +70,14 @@ void handleSDLEvents()
             if (event.window.event == SDL_WINDOWEVENT_ENTER && hasFocus) {
                 mouseFocus = true;
             }
-            //if (event.window.event == SDL_WINDOWEVENT_LEAVE) {
-            //    mouseFocus = false;
-            //}
         }
     }
-    if (hasFocus && mouseFocus) {
-        //SDL_WarpMouseInWindow(window, 319, 239);
-    }
     const Uint8 *KBS = SDL_GetKeyboardState(NULL);
-    if ((KBS[SDL_SCANCODE_LALT] || KBS[SDL_SCANCODE_RALT]) && KBS[SDL_SCANCODE_RETURN] /*&& !fscrkd*/) {
+    if ((KBS[SDL_SCANCODE_LALT] || KBS[SDL_SCANCODE_RALT]) && KBS[SDL_SCANCODE_RETURN]) {
         fullscr = !fullscr;
         setfscrmode = false;
-        //fscrkd = true;
         while ((KBS[SDL_SCANCODE_LALT] || KBS[SDL_SCANCODE_RALT]) && KBS[SDL_SCANCODE_RETURN]) {
             SDL_PollEvent(&event);
-            //SDL_Delay(50);
         }
     }
     if (KBS[SDL_SCANCODE_ESCAPE]) {
@@ -119,18 +85,14 @@ void handleSDLEvents()
     }
     if (getTimer(1) >= 1000) {
         resetTimer(1);
-        printf("\033[s\033[0;0H\033[K\n\033[K\033[0;0HFPS: %d\n\033[u", fps);
+        if (printFps) {printf("\033[s\033[0;0H\033[K\n\033[K\033[0;0HFPS: %d\n\033[u", fps);}
         fps = 0;
     }
+    return;
 }
 void renderScreen(TTF_Font *df) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 63, 255);
     SDL_RenderClear(renderer);
-    //SDL_RenderFillRect(renderer, &bg);
-    //SDL_SetRenderDrawColor(renderer, 255, 255, 12, 255);
-    //SDL_RenderFillRect(renderer, &p1);
-    //SDL_SetRenderDrawColor(renderer, 255, 12, 255, 255);
-    //SDL_RenderFillRect(renderer, &p2);
     if (rp1ot) {
         for (int i = 0; i <= 15; i++) {
             SDL_SetRenderDrawColor(renderer, 127, 34, 255, 2);
@@ -224,20 +186,19 @@ void renderScreen(TTF_Font *df) {
     resetTimer(0);
     if (!setfscrmode) {
         setfscrmode = true;
-        //SDL_Delay(250);
         if (fullscr) {
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
         } else {
             SDL_SetWindowFullscreen(window, 0);
         }
-        //SDL_Delay(250);
     }
     SDL_RenderPresent(renderer);
+    return;
 }
 void doGameLogic()
 {
     if (chkcycle) {SDL_PollEvent(&event);}
-    Uint8 *KBS = SDL_GetKeyboardState(NULL);
+    const Uint8 *KBS = SDL_GetKeyboardState(NULL);
     bool aiup = false;
     bool aileft = false;
     bool airight = false;
@@ -253,27 +214,19 @@ void doGameLogic()
         }
         goto sgl;
     }
-    //printf("polling events\n");
     if (p1r > 0) {p1r = p1r - 0.1;}
     if (p1r < 0) {p1r = p1r + 0.1;}
     if (p2r > 0) {p2r = p2r - 0.1;}
     if (p2r < 0) {p2r = p2r + 0.1;}
     if (sp) {
-        //if (abs(abs(p1.x + 10) - abs(p2.x + 10)) < 72 + rand()%144 && rand()%5 == 0) {aiup = true;}
-        //printf("%d\n", abs(p1.x + 10 - p2.x + 10));
         p2aihc = 300;
         if (abs(p1.x + 10 - p2.x + 10) < 250 + rand()%15 && rand()%1 == 0 && (p2r > 5 || p2r < -5)) {aiup = true; p2aihc = 200;}
         if (abs(p1.x + 10 - p2.x + 10) < 220 + rand()%10 && rand()%3 == 0) {aiup = false;}
         if (abs(p1.x + 10 - p2.x + 10) < 50 + rand()%5 && rand()%1 == 0) {aiup = true;}
         if (abs(p1.x + 10 - p2.x + 10) < 40 + rand()%5 && rand()%1 == 0) {aiup = false;}
         if (p2.y < 450) {aiup = false;}
-        //printf("%d\n", aip);
         if ((aip < -10 && p2.y > 400) || (p2r < 0 && p2.y < 415) && p1.y > p2aihc) {airight = true;}
         if ((aip > 10 && p2.y > 400) || (p2r > 0 && p2.y < 415) && p1.y > p2aihc) {aileft = true;}
-        //printf("-----------------\n");
-        //if (aiup) {printf("aiup\n");}
-        //if (aileft) {printf("aileft\n");}
-        //if (airight) {printf("airight\n");}
     }
     if (p1g > -15 && chkcycle) {p1g = p1g - 0.75;}
     if (p2g > -15 && chkcycle) {p2g = p2g - 0.75;}
@@ -290,7 +243,6 @@ void doGameLogic()
     p1.y = p1.y - p1g;
     p2.y = p2.y - p2g;
     if (p1.y > 430) {
-        //if (p1.y > 459)
         if (p1.y >= 460) {
             p1.y = 460;
             p1g = p1g * -0.3 - 0.5;
@@ -307,7 +259,6 @@ void doGameLogic()
         }
     }
     if (p2.y > 430) {
-        //if (p1.y > 459)
         if (p2.y >= 460) {
             p2.y = 460;
             p2g = p2g * -0.3 - 0.5;
@@ -328,10 +279,6 @@ void doGameLogic()
     if (p2.x + 20 - p1.x > -1 && p1.x + 20 - p2.x > -1 && p2.y + 20 - p1.y > -1 && p1.y + 20 - p2.y > -1) {rc = true;}
     if (!rc) {
         rp1ot = rand()%2;
-        //printf("p1g: %f\n", p1g);
-        //printf("p2g: %f\n", p2g);
-        //printf("p1.y: %d\n", p1.y);
-        //printf("p2.y: %d\n", p2.y);
     } else {
         if (p1g < 0.1 && p1.y + 20 < p2.y + 17 && p1.y + 20 > p2.y - 1) {
             p2.x = 520; p2.y = -120;
@@ -342,17 +289,51 @@ void doGameLogic()
             p2s++;
         }
     }
-    //printf("p1.y: %d\n", p1.y);
-    //printf("pg: %d\n", pg);
-    //printf("------------\n");
     ptrail1[pto].x = p1.x;
     ptrail1[pto].y = p1.y;
     ptrail2[pto].x = p2.x;
     ptrail2[pto].y = p2.y;
-    pto++;// pto++;
+    pto++;
     if (pto >= 16) {
         pto = 0;
     }
     sgl:
     menu = menu;
+    return;
 }
+int main(int argc, char *argv[])
+{
+    SDL_Init(SDL_INIT_EVERYTHING);
+    TTF_Init();
+    window = SDL_CreateWindow("Block Fight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_ALLOW_HIGHDPI);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    bg.x = 0; bg.y = 0; bg.w = 640; bg.h = 480;
+    p1.x = 99; p1.y = -120; p1.w = 20; p1.h = 20;
+    p2.x = 520; p2.y = -120; p2.w = 20; p2.h = 20;
+    TTF_Font * font = TTF_OpenFont("LCD_MONO.TTF", 96);
+    for (int i = 0; i <= 15; i++) {
+        ptrail1[i].h = 20;
+        ptrail1[i].w = 20;
+        ptrail2[i].h = 20;
+        ptrail2[i].w = 20;
+        ptrail1[i].x = 99;
+        ptrail1[i].y = -120;
+        ptrail2[i].x = 520;
+        ptrail2[i].y = -120;
+    }
+    while (isRunning) {
+        handleSDLEvents();
+        doGameLogic();
+        renderScreen(font);
+    }
+    SDL_SetWindowFullscreen(window, 0);
+    TTF_CloseFont(font);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    TTF_Quit();
+    SDL_Quit();
+    return 0;
+}
+
