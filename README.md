@@ -4,7 +4,7 @@ A SDL2 Demo game<br>
 # Compiling:
 !: If you are reading this line, I still haven't found a way to cross compile this for Windows.<br>
 The build.sh is a linux gcc compile script.<br>
-You will need to install SDL2 (`sudo apt install libsdl2-dev` on Ubuntu) and SDL2_ttf (`sudo apt install libsdl2-ttf-dev` on Ubuntu)<br>
+You will need to install SDL2 and SDL2_ttf (`sudo apt install libsdl2-dev libsdl2-ttf-dev`on apt)<br>
 Run build.sh. If it compiles correctly, it will start the game.<br>
 If you want to build it using the terminal, use `gcc -o block-fight main.c -no-pie -I/usr/include -lSDL2main -lSDL2 -lSDL2_ttf`.<br>
 <br>
